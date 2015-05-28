@@ -130,19 +130,17 @@ function processOpcode(opcode) {
 	}
 }
 
+// why is addition so complicated Q_Q
 function ADC(M) {
-	var sameSign = ~((A >> 7) ^ (M >> 7));
+	var sameSign = ~((A >>> 7) ^ (M >>> 7));
 	A += M;
 	A += getCarryFlag();
-
-	if (A & (1 << 8)) {
-		A ^= (1 << 8);
-		setCarryFlag(1);
-	}
-	if (sameSign && (M >> 7) & (A >> 7)) {
+	setCarryFlag(A >>> 8);
+	A &= 0xFF;
+	if (sameSign && (M >>> 7) ^ (A >>> 7)) {
 		setOverflowFlag(1);
 	}
-	setSignFlag(A >> 7);
+	setSignFlag(A >>> 7);
 	setZeroFlag(~A);
 }
 function AND(M) {
@@ -150,20 +148,31 @@ function AND(M) {
 	setSignFlag(A >> 7);
 	setZeroFlag(~A);
 }
+
 function ASLA() {
-	A << 1;
+	A <<= 1;
 	setCarryFlag(A >> 8);
-	A ^= 1 << 8;
+	A &= 0xFF;
 	setZeroFlag(~A);
 	setSignFlag(A >> 7);
 }
-function ASLM() {}
+function ASLM(addr) {
+	var temp = readMemory(addr);
+	temp <<= 1;
+	setCarryFlag(temp >> 8);
+	temp &= 0xFF;
+	setZeroFlag(~temp);
+	setSignFlag(temp >> 7);
+	writeMemory(addr, temp);
+}
+
 function BIT(M) {
 	var temp = A & M;
 	setZeroFlag(~temp);
 	setSignFlag(temp >> 7);
 	setOverflowFlag(temp >> 6);
 }
+
 function branch(val) {
 	if (val >> 7) {
 		PC -= (~val + 1) & 0xFF;
@@ -215,6 +224,67 @@ function BVC(val) {
 	}
 }
 
-function CMP(M) {
-	
+function CMP(val) {
+	setCarryFlag(A >= val);
+	setZeroFlag(A == val);
+	setSignFlag((A - val) < 0);
 }
+
+function CPX(val) {
+	setCarryFlag(X >= val);
+	setZeroFlag(X == val);
+	setSignFlag((X - val) < 0);
+}
+
+function CPY(val) {
+	setCarryFlag(Y >= val);
+	setZeroFlag(Y == val);
+	setSignFlag((Y - val) < 0);
+}
+
+function DEC(addr) {
+	var temp = readMemory(addr);
+	temp = temp - 1;
+	setSignFlag(temp < 0);
+	setZeroFlag(temp == 0);
+
+	// need to do this hack to deal with 8 bit vs 32 bit numbers
+	if (temp < 0) {
+		temp &= 0x7F;
+		temp |= 1 << 7;
+	}
+	writeMemory(addr);
+}
+
+function DEX(val) {
+	X = X - 1;
+	setSignFlag(X < 0);
+	setZeroFlag(X == 0);
+
+	// need to do this hack to deal with 8 bit vs 32 bit numbers
+	if (X < 0) {
+		X &= 0x7F;
+		X |= 1 << 7;
+	}
+}
+
+function DEY(val) {
+	Y = Y - 1;
+	setSignFlag(Y < 0);
+	setZeroFlag(Y == 0);
+
+	// need to do this hack to deal with 8 bit vs 32 bit numbers
+	if (Y < 0) {
+		Y &= 0x7F;
+		Y |= 1 << 7;
+	}
+}
+
+function EOR(val) {
+	A ^= val;
+	setZeroFlag(~A);
+	setSignFlag(A >>> 7);
+}
+
+
+
