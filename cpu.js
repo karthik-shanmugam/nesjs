@@ -12,11 +12,51 @@ var SP = 0xFF;
 var mem = new Uint8ClampedArray(0x10000);
 
 
+// TODO: fix four-letter functions (I copy pasta this from a 6502 reference page lel);
+var functions = [
+/* LSB  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F  */
+/*MSB*/
+/* 0 */ BRK, ORA, NOP, NOP, NOP, ORA,ASLM, NOP, PHP, ORA,ASLA, NOP, NOP, ORA,ASLM, NOP,
+/* 1 */ BPL, ORA, NOP, NOP, NOP, ORA,ASLM, NOP, CLC, ORA, NOP, NOP, NOP, ORA,ASLM, NOP,
+/* 2 */ JSR, AND, NOP, NOP, BIT, AND,ROLM, NOP, PLP, AND,ROLA, NOP, BIT, AND,ROLM, NOP,
+/* 3 */ BMI, AND, NOP, NOP, NOP, AND,ROLM, NOP, SEC, AND, NOP, NOP, NOP, AND,ROLM, NOP,
+/* 4 */ RTI, EOR, NOP, NOP, NOP, EOR, LSR, NOP, PHA, EOR, LSR, NOP, JMP, EOR, LSR, NOP, 
+/* 5 */ BVC, EOR, NOP, NOP, NOP, EOR, LSR, NOP, CLI, EOR, NOP, NOP, NOP, EOR, LSR, NOP, 
+/* 6 */ RTS, ADC, NOP, NOP, NOP, ADC, ROR, NOP, PLA, ADC, ROR, NOP, JMP, ADC, ROR, NOP, 
+/* 7 */ BVS, ADC, NOP, NOP, NOP, ADC, ROR, NOP, SEI, ADC, NOP, NOP, NOP, ADC, ROR, NOP, 
+/* 8 */ NOP, STA, NOP, NOP, STY, STA, STX, NOP, DEY, NOP, TXA, NOP, STY, STA, STX, NOP, 
+/* 9 */ BCC, STA, NOP, NOP, STY, STA, STX, NOP, TYA, STA, TXS, NOP, NOP, STA, NOP, NOP, 
+/* A */ LDY, LDA, LDX, NOP, LDY, LDA, LDX, NOP, TAY, LDA, TAX, NOP, LDY, LDA, LDX, NOP, 
+/* B */ BCS, LDA, NOP, NOP, LDY, LDA, LDX, NOP, CLV, LDA, TSX, NOP, LDY, LDA, LDX, NOP, 
+/* C */ CPY, CMP, NOP, NOP, CPY, CMP, DEC, NOP, INY, CMP, DEX, NOP, CPY, CMP, DEC, NOP, 
+/* D */ BNE, CMP, NOP, NOP, NOP, CMP, DEC, NOP, CLD, CMP, NOP, NOP, NOP, CMP, DEC, NOP, 
+/* E */ CPX, SBC, NOP, NOP, CPX, SBC, INC, NOP, INX, SBC, NOP, NOP, CPX, SBC, INC, NOP, 
+/* F */ BEQ, SBC, NOP, NOP, NOP, SBC, INC, NOP, SED, SBC, NOP, NOP, NOP, SBC, INC, NOP];
+
+
+
+
+
+/* 4 */
+/* 5 */
+
+
+
+/* A */
+/* B */
+/* C */
+/* D */
+/* E */
+/* F */
+
+var implicits = new Set([0x00, 0x18, 0x38, 0x58, 0x78, 0xB8, 0xD8, 0xF8, 0xEA, 
+                     0xAA, 0x8A, 0xCA, 0xE8, 0xA8, 0x98, 0x88, 0xC8, 0x40,
+                     0x60, 0x9A, 0xBA, 0x48, 0x68, 0x08, 0x28]);
 
 // TODO
 function executeOpcode(opcode) {
     if (implicit(opcode)) {
-
+        functions[opcode]();
     } else {
         switch (opcode & 3) {
             case 0;
