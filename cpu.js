@@ -12,46 +12,81 @@ var SP = 0xFF;
 var mem = new Uint8ClampedArray(0x10000);
 
 
+/*
+*                    # #     # #     # ######     #######    #    ######  #       #######  #####  
+*                    # #     # ##   ## #     #       #      # #   #     # #       #       #     # 
+*                    # #     # # # # # #     #       #     #   #  #     # #       #       #       
+*                    # #     # #  #  # ######        #    #     # ######  #       #####    #####  
+*              #     # #     # #     # #             #    ####### #     # #       #             # 
+*              #     # #     # #     # #             #    #     # #     # #       #       #     # 
+*               #####   #####  #     # #             #    #     # ######  ####### #######  ##### 
+*/
+
+
+
+
 // TODO: fix four-letter functions (I copy pasta this from a 6502 reference page lel);
 var functions = [
-/* LSB  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F  */
+/*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,     0A,     0B,     0C,     0D,     0E,     0F,    LSB*/
+/* 0 */    BRK,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    PHP,    ORA,   ASLA,    NOP,    NOP,    ORA,   ASLM,    NOP,   
+/* 1 */    BPL,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    CLC,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,   
+/* 2 */    JSR,    AND,    NOP,    NOP,    BIT,    AND,   ROLM,    NOP,    PLP,    AND,   ROLA,    NOP,    BIT,    AND,   ROLM,    NOP,   
+/* 3 */    BMI,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,    SEC,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,   
+/* 4 */    RTI,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,    PHA,    EOR,    LSR,    NOP,    JMP,    EOR,    LSR,    NOP,   
+/* 5 */    BVC,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,    CLI,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,   
+/* 6 */    RTS,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,    PLA,    ADC,    ROR,    NOP,    JMP,    ADC,    ROR,    NOP,   
+/* 7 */    BVS,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,    SEI,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,   
+/* 8 */    NOP,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    DEY,    NOP,    TXA,    NOP,    STY,    STA,    STX,    NOP,   
+/* 9 */    BCC,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    TYA,    STA,    TXS,    NOP,    NOP,    STA,    NOP,    NOP,   
+/* A */    LDY,    LDA,    LDX,    NOP,    LDY,    LDA,    LDX,    NOP,    TAY,    LDA,    TAX,    NOP,    LDY,    LDA,    LDX,    NOP,   
+/* B */    BCS,    LDA,    NOP,    NOP,    LDY,    LDA,    LDX,    NOP,    CLV,    LDA,    TSX,    NOP,    LDY,    LDA,    LDX,    NOP,   
+/* C */    CPY,    CMP,    NOP,    NOP,    CPY,    CMP,    DEC,    NOP,    INY,    CMP,    DEX,    NOP,    CPY,    CMP,    DEC,    NOP,   
+/* D */    BNE,    CMP,    NOP,    NOP,    NOP,    CMP,    DEC,    NOP,    CLD,    CMP,    NOP,    NOP,    NOP,    CMP,    DEC,    NOP,   
+/* E */    CPX,    SBC,    NOP,    NOP,    CPX,    SBC,    INC,    NOP,    INX,    SBC,    NOP,    NOP,    CPX,    SBC,    INC,    NOP,   
+/* F */    BEQ,    SBC,    NOP,    NOP,    NOP,    SBC,    INC,    NOP,    SED,    SBC,    NOP,    NOP,    NOP,    SBC,    INC,    NOP];
 /*MSB*/
-/* 0 */ BRK, ORA, NOP, NOP, NOP, ORA,ASLM, NOP, PHP, ORA,ASLA, NOP, NOP, ORA,ASLM, NOP,
-/* 1 */ BPL, ORA, NOP, NOP, NOP, ORA,ASLM, NOP, CLC, ORA, NOP, NOP, NOP, ORA,ASLM, NOP,
-/* 2 */ JSR, AND, NOP, NOP, BIT, AND,ROLM, NOP, PLP, AND,ROLA, NOP, BIT, AND,ROLM, NOP,
-/* 3 */ BMI, AND, NOP, NOP, NOP, AND,ROLM, NOP, SEC, AND, NOP, NOP, NOP, AND,ROLM, NOP,
-/* 4 */ RTI, EOR, NOP, NOP, NOP, EOR, LSR, NOP, PHA, EOR, LSR, NOP, JMP, EOR, LSR, NOP, 
-/* 5 */ BVC, EOR, NOP, NOP, NOP, EOR, LSR, NOP, CLI, EOR, NOP, NOP, NOP, EOR, LSR, NOP, 
-/* 6 */ RTS, ADC, NOP, NOP, NOP, ADC, ROR, NOP, PLA, ADC, ROR, NOP, JMP, ADC, ROR, NOP, 
-/* 7 */ BVS, ADC, NOP, NOP, NOP, ADC, ROR, NOP, SEI, ADC, NOP, NOP, NOP, ADC, ROR, NOP, 
-/* 8 */ NOP, STA, NOP, NOP, STY, STA, STX, NOP, DEY, NOP, TXA, NOP, STY, STA, STX, NOP, 
-/* 9 */ BCC, STA, NOP, NOP, STY, STA, STX, NOP, TYA, STA, TXS, NOP, NOP, STA, NOP, NOP, 
-/* A */ LDY, LDA, LDX, NOP, LDY, LDA, LDX, NOP, TAY, LDA, TAX, NOP, LDY, LDA, LDX, NOP, 
-/* B */ BCS, LDA, NOP, NOP, LDY, LDA, LDX, NOP, CLV, LDA, TSX, NOP, LDY, LDA, LDX, NOP, 
-/* C */ CPY, CMP, NOP, NOP, CPY, CMP, DEC, NOP, INY, CMP, DEX, NOP, CPY, CMP, DEC, NOP, 
-/* D */ BNE, CMP, NOP, NOP, NOP, CMP, DEC, NOP, CLD, CMP, NOP, NOP, NOP, CMP, DEC, NOP, 
-/* E */ CPX, SBC, NOP, NOP, CPX, SBC, INC, NOP, INX, SBC, NOP, NOP, CPX, SBC, INC, NOP, 
-/* F */ BEQ, SBC, NOP, NOP, NOP, SBC, INC, NOP, SED, SBC, NOP, NOP, NOP, SBC, INC, NOP];
+
+
+
+// TODO map these to actual functions (also a copy pasta from internet lolz);
+var addressing = [
+/*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,    0A,      0B,     0C,     0D,     0E,     0F,    LSB*/
+/* 00*/   impl,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,       ,    zpg,    abs,       , 
+/* 10*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
+/* 20*/    zpg,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
+/* 30*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
+/* 40*/    zpg,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
+/* 50*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
+/* 60*/    zpg,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
+/* 70*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
+/* 80*/       ,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,       ,    zpg,       ,    zpg,    zpg,    abs,       , 
+/* 90*/    zpg,  ind.Y,       ,       ,  zpg.X,  zpg.X,  zpg.Y,       ,    zpg,  abs.Y,    zpg,       ,       ,  abs.X,       ,       , 
+/* A0*/      #,  X.ind,      #,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
+/* B0*/    zpg,  ind.Y,       ,       ,  zpg.X,  zpg.X,  zpg.Y,       ,    zpg,  abs.Y,    zpg,       ,  abs.X,  abs.X,  abs.Y,       , 
+/* C0*/      #,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
+/* D0*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
+/* E0*/      #,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
+/* F0*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       ];
+/*MSB*/
 
 
 
 
 
-/* 4 */
-/* 5 */
 
 
 
-/* A */
-/* B */
-/* C */
-/* D */
-/* E */
-/* F */
 
-var implicits = new Set([0x00, 0x18, 0x38, 0x58, 0x78, 0xB8, 0xD8, 0xF8, 0xEA, 
-                     0xAA, 0x8A, 0xCA, 0xE8, 0xA8, 0x98, 0x88, 0xC8, 0x40,
-                     0x60, 0x9A, 0xBA, 0x48, 0x68, 0x08, 0x28]);
+
+
+
+
+
+
+
+var implicits = new Set([0x00,  0x18,  0x38,  0x58,  0x78,  0xB8,  0xD8,  0xF8,  0xEA, 
+                     0xAA,  0x8A,  0xCA,  0xE8,  0xA8,  0x98,  0x88,  0xC8,  0x40, 
+                     0x60,  0x9A,  0xBA,  0x48,  0x68,  0x08,  0x28]);
 
 // TODO
 function executeOpcode(opcode) {
@@ -94,11 +129,11 @@ function mirror(addr) {
     } else {
         return addr;
     }
-} 
+}
 function readMemory(addr) {
     return mem[addr];
 }
-function writeMemory(addr, val) {
+function writeMemory(addr,  val) {
     mem[mirror(addr)] = val;
 }
 
@@ -353,7 +388,7 @@ function DEC(addr) {
         temp &= 0x7F;
         temp |= 1 << 7;
     }
-    writeMemory(addr, temp);
+    writeMemory(addr,  temp);
 }
 function DEX(val) {
     X = X - 1;
@@ -384,7 +419,7 @@ function INC(addr) {
     temp &= 0xFF;
     setSignFlag(temp >> 7);
     setZeroFlag(~temp);
-    writeMemory(addr, temp);
+    writeMemory(addr,  temp);
 }
 function INX() {
     X = X + 1;
@@ -440,7 +475,7 @@ function RTS() {
 
 // BIT OPERATIONS
 // some functions are four lettered; these can operate on Acc or a memory locaiton
-// this is fundamentally different from most functions using memory 
+// this is fundamentally different from most functions using memory
 // because it reads and writes and therefore needs special implementation.
 
 function BIT(M) {
@@ -463,7 +498,7 @@ function ASLM(addr) {
     temp &= 0xFF;
     setZeroFlag(~temp);
     setSignFlag(temp >> 7);
-    writeMemory(addr, temp);
+    writeMemory(addr,  temp);
 }
 
 function LSRA() {
@@ -479,7 +514,7 @@ function LSRM(addr) {
     temp >>>= 1;
     setSignFlag(0);
     setZeroFlag(~temp);
-    writeMemory(addr, temp);
+    writeMemory(addr,  temp);
 }
 
 function ROLA() {
@@ -499,7 +534,7 @@ function ROLM(addr) {
     temp &= 0xFF;
     setSignFlag(temp >>> 7);
     setZeroFlag(~temp);
-    writeMemory(addr,temp);
+    writeMemory(addr, temp);
 }
 
 function RORA() {
@@ -519,7 +554,7 @@ function RORM(addr) {
     temp &= =0xFF;
     setSignFlag(temp >>> 7);
     setZeroFlag(~temp);
-    writeMemory(addr,temp);
+    writeMemory(addr, temp);
 }
 
 function AND(M) {
@@ -554,7 +589,7 @@ function push(val) {
     if (SP < 0x100) {
         SP = 0x1FF;
     }
-    writeMemory(SP, val);
+    writeMemory(SP,  val);
 }
 
 function pull() {
