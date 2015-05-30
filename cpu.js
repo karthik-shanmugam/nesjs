@@ -69,9 +69,44 @@ var addressing = [
 /* F0*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       ];
 /*MSB*/
 
+function readPC() {}
+function immediate() {
+    return readPC();
+}
+function zeroPage() {
+    return readMemory(readPC());
+}
+function zeroPageX() {
+    return readMemory((readPC() + X) & 0xFF);
+}
+function zeroPageY() {
+    return readMemory((readPC() + Y) & 0xFF);
+}
+function relative() {
+    return readPC();
+}
+// TODO: CHECK ENDIANNESS
+function absolute() {
+    return readMemory(readPC() << 8 | readPC());
+}
+function absoluteX() {
+    return readMemory(((readPC() << 8 | readPC()) + X) & 0xFFFF);
+}
+function absoluteY() {
+    return readMemory(((readPC() << 8 | readPC()) + Y) & 0xFFFF);
+}
+function indirect() {
+    var addr = readPC() << 8 | readPC();
+    return readMemory(addr) | readMemory((addr + 1) & 0xFFFF) << 8;
+}
 
-
-
+// TODO
+function indexedIndirect() {
+    return readMemory((readPC() + X) & 0xFF);
+}
+function indirectIndexed() {
+    return
+}
 
 
 
