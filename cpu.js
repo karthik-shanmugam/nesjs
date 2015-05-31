@@ -1,6 +1,5 @@
 console.log("hello world");
 
-
 // The 6502's registers
 var A = 0;
 var X = 0;
@@ -32,10 +31,10 @@ var operations = [
 /* 1 */    BPL,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    CLC,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,   
 /* 2 */    JSR,    AND,    NOP,    NOP,    BIT,    AND,   ROLM,    NOP,    PLP,    AND,   ROLA,    NOP,    BIT,    AND,   ROLM,    NOP,   
 /* 3 */    BMI,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,    SEC,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,   
-/* 4 */    RTI,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,    PHA,    EOR,    LSR,    NOP,    JMP,    EOR,    LSR,    NOP,   
-/* 5 */    BVC,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,    CLI,    EOR,    NOP,    NOP,    NOP,    EOR,    LSR,    NOP,   
-/* 6 */    RTS,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,    PLA,    ADC,    ROR,    NOP,    JMP,    ADC,    ROR,    NOP,   
-/* 7 */    BVS,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,    SEI,    ADC,    NOP,    NOP,    NOP,    ADC,    ROR,    NOP,   
+/* 4 */    RTI,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,    PHA,    EOR,   LSRA,    NOP,    JMP,    EOR,   LSRM,    NOP,   
+/* 5 */    BVC,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,    CLI,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,   
+/* 6 */    RTS,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,    PLA,    ADC,   RORA,    NOP,    JMP,    ADC,   RORM,    NOP,   
+/* 7 */    BVS,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,    SEI,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,   
 /* 8 */    NOP,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    DEY,    NOP,    TXA,    NOP,    STY,    STA,    STX,    NOP,   
 /* 9 */    BCC,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    TYA,    STA,    TXS,    NOP,    NOP,    STA,    NOP,    NOP,   
 /* A */    LDY,    LDA,    LDX,    NOP,    LDY,    LDA,    LDX,    NOP,    TAY,    LDA,    TAX,    NOP,    LDY,    LDA,    LDX,    NOP,   
@@ -51,7 +50,7 @@ var operations = [
 // TODO map these to actual functions (also a copy pasta from internet lolz);
 // TODO should I make em all functions?
 var addressing = [
-/*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,    0A,      0B,     0C,     0D,     0E,     0F,    LSB*/
+/*                    00,              01,              02,              03,              04,              05,              06,              07,              08,              09,             0A,               0B,              0C,              0D,              0E,              0F,             LSB*/
 /* 00*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",              "",        absolute,        absolute,              "",          
 /* 10*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
 /* 20*/         absolute, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        absolute,        absolute,        absolute,              "",          
@@ -75,6 +74,34 @@ var addressing = [
 
 
 
+// testing stuff
+// 
+// 
+function loadProgram(prgm) {
+    var prgmArr = prgm.split(" ");
+    var prgmLoc = 0x8000;
+    for (var i = 0; i < prgmArr.length; i++) {
+        writeMemory(prgmLoc + i, parseInt("0x".concat(prgmArr[i])))
+    }
+}
+function dumpPage(pageNum) {
+    var str = "";
+    for (var line = pageNum << 8; line < (pageNum + 1) << 8; line += 16) {
+        str += "0x" + line.toString(16);
+        for (var lsb = 0x0000; lsb < 0x0010; lsb++) {
+            str += " ";
+            str += readMemory(line | lsb).toString();
+        }
+        str += "<br>";
+    }
+    document.write(str);
+}
+loadProgram("a9 01 8d 00 02 a9 05 8d 01 02 a9 09 8d 02 02");
+for (var i = 0; i < 10; i++) {
+    executeCycle();
+}
+dumpPage(2);
+console.log(readMemory(0x202));
 
 
 
@@ -86,9 +113,21 @@ var addressing = [
 
 
 
-var implicits = new Set([0x00,  0x18,  0x38,  0x58,  0x78,  0xB8,  0xD8,  0xF8,  0xEA, 
-                     0xAA,  0x8A,  0xCA,  0xE8,  0xA8,  0x98,  0x88,  0xC8,  0x40, 
-                     0x60,  0x9A,  0xBA,  0x48,  0x68,  0x08,  0x28]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // TODO
 // 
@@ -97,20 +136,20 @@ var irqAddr = 0xFFFE;
 
 //TODO implement the functions I called and make sure this is how interrupts ACTUALLY work
 function executeCycle() {
-    if (nmiOccured()) {
-        clearNonMaskableInteruptFlop();
-        NMI();
-    } else if (canIrq() && irqOccured()) {
-        IRQ();
-    } else {
+    // if (nmiOccured()) {
+    //     clearNonMaskableInteruptFlop();
+    //     NMI();
+    // } else if (canIrq() && irqOccured()) {
+    //     IRQ();
+    // } else {
         // TODO: don't use ++ it's horrible
         executeOpcode(readPC());
-    }
+    // }
 }
 function executeOpcode(opcode) {
     var addressingMode = addressing[opcode];
     var operation = operations[opcode];
-    if (addressingMode == "impl" || addressingMode == "A") {
+    if (addressingMode === "impl" || addressingMode === "A") {
         operation();
     } else {
         operation(addressingMode());
@@ -151,7 +190,8 @@ function relative() {
 }
 // TODO: CHECK ENDIANNESS
 function absolute() {
-    return readMemory(readPC() | readPC() << 8);
+    var temp = readMemory(readPC() | readPC() << 8);
+    return temp;
 }
 function absoluteX() {
     return readMemory(((readPC() | readPC() << 8) + X) & 0xFFFF);
@@ -198,7 +238,7 @@ function mirror(addr) {
     }
 }
 function readMemory(addr) {
-    return mem[addr];
+    return mem[mirror(addr)];
 }
 function writeMemory(addr,  val) {
     mem[mirror(addr)] = val;
@@ -330,14 +370,15 @@ function to8(val) {
 
 // Addition/Subtraction
 // TODO BCD Mode?
+// TODO simplify this...
 // why is addition so complicated Q_Q
-function ADC(M) {
-    var sameSign = ~((A >>> 7) ^ (M >>> 7));
-    A += M;
+function ADC(val) {
+    var sameSign = ~((A >>> 7) ^ (val >>> 7));
+    A += val;
     A += getCarryFlag();
     setCarryFlag(A >>> 8);
     A &= 0xFF;
-    if (sameSign && (M >>> 7) ^ (A >>> 7)) {
+    if (sameSign && (val >>> 7) ^ (val >>> 7)) {
         setOverflowFlag(1);
     }
     setSignFlag(A >>> 7);
@@ -634,7 +675,7 @@ function RORA() {
     A |= getCarryFlag() << 8;
     setCarryFlag(A & 1);
     A >>>= 1;
-    A &= =0xFF;
+    A &= 0xFF;
     setSignFlag(A >>> 7);
     setZeroFlag(~A);
 }
@@ -644,7 +685,7 @@ function RORM(addr) {
     temp |= getCarryFlag() << 8;
     setCarryFlag(temp & 1);
     temp >>>= 1;
-    temp &= =0xFF;
+    temp &= 0xFF;
     setSignFlag(temp >>> 7);
     setZeroFlag(~temp);
     writeMemory(addr, temp);
@@ -755,13 +796,13 @@ function CLV() {
 
 // memory operations (store / load)
 function STA(addr) {
-    A = readMemory(addr);
+    writeMemory(addr, A);
 }
 function STX(addr) {
-    X = readMemory(addr);
+    writeMemory(addr, X);
 }
 function STY(addr) {
-    Y = readMemory(addr);
+    writeMemory(addr, Y);
 }
 function LDA(val) {
     A = val;
