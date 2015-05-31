@@ -26,7 +26,7 @@ var mem = new Uint8ClampedArray(0x10000);
 
 
 // TODO: fix four-letter functions (I copy pasta this from a 6502 reference page lel);
-var functions = [
+var operations = [
 /*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,     0A,     0B,     0C,     0D,     0E,     0F,    LSB*/
 /* 0 */    BRK,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    PHP,    ORA,   ASLA,    NOP,    NOP,    ORA,   ASLM,    NOP,   
 /* 1 */    BPL,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    CLC,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,   
@@ -49,64 +49,31 @@ var functions = [
 
 
 // TODO map these to actual functions (also a copy pasta from internet lolz);
+// TODO should I make em all functions?
 var addressing = [
 /*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,    0A,      0B,     0C,     0D,     0E,     0F,    LSB*/
-/* 00*/   impl,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,       ,    zpg,    abs,       , 
-/* 10*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
-/* 20*/    zpg,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
-/* 30*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
-/* 40*/    zpg,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
-/* 50*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
-/* 60*/    zpg,  X.ind,       ,       ,       ,    zpg,    zpg,       ,    zpg,      #,      A,       ,    zpg,    zpg,    abs,       , 
-/* 70*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
-/* 80*/       ,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,       ,    zpg,       ,    zpg,    zpg,    abs,       , 
-/* 90*/    zpg,  ind.Y,       ,       ,  zpg.X,  zpg.X,  zpg.Y,       ,    zpg,  abs.Y,    zpg,       ,       ,  abs.X,       ,       , 
-/* A0*/      #,  X.ind,      #,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
-/* B0*/    zpg,  ind.Y,       ,       ,  zpg.X,  zpg.X,  zpg.Y,       ,    zpg,  abs.Y,    zpg,       ,  abs.X,  abs.X,  abs.Y,       , 
-/* C0*/      #,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
-/* D0*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       , 
-/* E0*/      #,  X.ind,       ,       ,    zpg,    zpg,    zpg,       ,    zpg,      #,    zpg,       ,    zpg,    zpg,    abs,       , 
-/* F0*/    zpg,  ind.Y,       ,       ,       ,  zpg.X,  zpg.X,       ,    zpg,  abs.Y,       ,       ,       ,  abs.X,  abs.X,       ];
+/* 00*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",              "",        absolute,        absolute,              "",          
+/* 10*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
+/* 20*/         absolute, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        absolute,        absolute,        absolute,              "",          
+/* 30*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
+/* 40*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        absolute,        absolute,        absolute,              "",          
+/* 50*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
+/* 60*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        indirect,        absolute,        absolute,              "",          
+/* 70*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
+/* 80*/               "", indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",              "",          "impl",              "",        absolute,        absolute,        absolute,              "",          
+/* 90*/         relative, indirectIndexed,              "",              "",       zeroPageX,       zeroPageX,       zeroPageY,              "",          "impl",       absoluteY,          "impl",              "",              "",       absoluteX,              "",              "",          
+/* A0*/        immediate, indexedIndirect,       immediate,              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
+/* B0*/         relative, indirectIndexed,              "",              "",       zeroPageX,       zeroPageX,       zeroPageY,              "",          "impl",       absoluteY,          "impl",              "",       absoluteX,       absoluteX,       absoluteY,              "",          
+/* C0*/        immediate, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
+/* D0*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
+/* E0*/        immediate, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
+/* F0*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,                ];
 /*MSB*/
 
-function readPC() {}
-function immediate() {
-    return readPC();
-}
-function zeroPage() {
-    return readMemory(readPC());
-}
-function zeroPageX() {
-    return readMemory((readPC() + X) & 0xFF);
-}
-function zeroPageY() {
-    return readMemory((readPC() + Y) & 0xFF);
-}
-function relative() {
-    return readPC();
-}
-// TODO: CHECK ENDIANNESS
-function absolute() {
-    return readMemory(readPC() << 8 | readPC());
-}
-function absoluteX() {
-    return readMemory(((readPC() << 8 | readPC()) + X) & 0xFFFF);
-}
-function absoluteY() {
-    return readMemory(((readPC() << 8 | readPC()) + Y) & 0xFFFF);
-}
-function indirect() {
-    var addr = readPC() << 8 | readPC();
-    return readMemory(addr) | readMemory((addr + 1) & 0xFFFF) << 8;
-}
 
-// TODO
-function indexedIndirect() {
-    return readMemory((readPC() + X) & 0xFF);
-}
-function indirectIndexed() {
-    return
-}
+
+
+
 
 
 
@@ -124,32 +91,97 @@ var implicits = new Set([0x00,  0x18,  0x38,  0x58,  0x78,  0xB8,  0xD8,  0xF8, 
                      0x60,  0x9A,  0xBA,  0x48,  0x68,  0x08,  0x28]);
 
 // TODO
-function executeOpcode(opcode) {
-    if (implicit(opcode)) {
-        functions[opcode]();
+// 
+var nmiAddr = 0xFFFA;
+var irqAddr = 0xFFFE;
+
+//TODO implement the functions I called and make sure this is how interrupts ACTUALLY work
+function executeCycle() {
+    if (nmiOccured()) {
+        clearNonMaskableInteruptFlop();
+        NMI();
+    } else if (canIrq() && irqOccured()) {
+        IRQ();
     } else {
-        switch (opcode & 3) {
-            case 0;
-                var val = getAddrVal(opcode);
-                break;
-            case 1:
-                var val = getVal(opcode);
-                break;
-
-            case 2:
-
-                // accumulator mode
-                if ((opcode >>> 2) & 7 == 2) {
-
-                } else {
-                    var addr = getAddr(opcode);
-
-                }
-                break;
-
-        }
+        // TODO: don't use ++ it's horrible
+        executeOpcode(readPC());
     }
 }
+function executeOpcode(opcode) {
+    var addressingMode = addressing[opcode];
+    var operation = operations[opcode];
+    if (addressingMode == "impl" || addressingMode == "A") {
+        operation();
+    } else {
+        operation(addressingMode());
+    }
+}
+
+
+
+
+
+
+
+
+// TODO actully use this...
+function readPC() {
+    PC++;
+    return readMemory(PC);
+}
+
+
+
+function immediate() {
+    return readPC();
+}
+function zeroPage() {
+    return readMemory(readPC());
+}
+function zeroPageX() {
+    return readMemory((readPC() + X) & 0xFF);
+}
+function zeroPageY() {
+    return readMemory((readPC() + Y) & 0xFF);
+}
+
+// TODO is this right?
+function relative() {
+    return readPC();
+}
+// TODO: CHECK ENDIANNESS
+function absolute() {
+    return readMemory(readPC() | readPC() << 8);
+}
+function absoluteX() {
+    return readMemory(((readPC() | readPC() << 8) + X) & 0xFFFF);
+}
+function absoluteY() {
+    return readMemory(((readPC() | readPC() << 8) + Y) & 0xFFFF);
+}
+function indirect() {
+    var addr = readPC() << 8 | readPC();
+    return readMemory(addr) | readMemory((addr + 1) & 0xFFFF) << 8;
+}
+
+// TODO
+function indexedIndirect() {
+    var LSB = (readPC() + X) & 0xFF;
+    var MSB = (LSB + 1) & 0xFF;
+    return readMemory(MSB) << 8 | readMemory(LSB);
+}
+function indirectIndexed() {
+    var LSB = readPC() & 0xFF;
+    var MSB = (LSB + 1) & 0xFF;
+    return ((readMemory(MSB) << 8 | readMemory(LSB)) + Y) & 0xFFFF;
+}
+
+
+
+
+
+
+
 
 
 
@@ -285,18 +317,15 @@ function setSignFlag(bit) {
 
 
 
-function executeCycle() {
-    var opcode = program[PC];
+
+// converting two's complement numbers
+// TODO check if these work
+function to32(val) {
+    return ((val << 24) & 0x80000000) | (val & 0x7F);
 }
-function processOpcode(opcode) {
-    switch (opcode) {
-        case 0x69:
-
-    }
+function to8(val) {
+    return ((val >>> 24) & 0x80) | (val & 0x7F);
 }
-
-
-
 
 
 // Addition/Subtraction
@@ -316,7 +345,14 @@ function ADC(M) {
 }
 // TODO
 function SBC(val) {
-
+    A = to32(A);
+    val = to32(val);
+    A = A - val - (1 - getCarryFlag());
+    setOverflowFlag(A > 127 || A < -128);
+    setCarryFlag(A & 0x100);
+    A = to8(A);
+    setZeroFlag(~A);
+    setSignFlag(A >>> 7);
 }
 
 
@@ -483,21 +519,43 @@ function INY() {
 // JUMPING AROUND AND STUFF
 // TODO
 function BRK() {
+    push((PC >>> 8) & 0xFF);
+    push(PC & 0xFF);
+    push(P);
+    // TODO & 0xFF00 0x00FF these?
+    PC = readMemory(0xFFFE) << 8 | readMemory(0xFFFF);
+    setBRKFlag(1);
 }
 function JMP(val) {
     PC = val;
 }
 // TODO
 function JSR(val) {
+    push(PC >>> 8 & 0xFF);
+    push(PC & 0xFF);
+    PC = val;
 }
 // TODO check if we should be pulling MSByte of PC first
+// TODO PEMDAS
 function RTI() {
     P = pull();
-    PC = (pull() << 8) | pull();
+    PC = pull() | pull() << 8;
 }
 function RTS() {
-    PC = (pull() << 8) | pull();
-    PC--;
+    PC = pull() | pull() << 8;
+    PC++;
+}
+
+// TODO remove for speed? included for readability but...
+function IRQ() {
+    BRK();
+}
+function NMI() {
+    push((PC >>> 8) & 0xFF);
+    push(PC & 0xFF);
+    push(P);
+    // TODO & 0xFF00 0x00FF these?
+    PC = readMemory(0xFFFA) << 8 | readMemory(0xFFFB);
 }
 
 
