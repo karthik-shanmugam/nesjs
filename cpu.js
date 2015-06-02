@@ -23,26 +23,25 @@ var mem = new Uint8ClampedArray(0x10000);
 
 
 
-
 // TODO: fix four-letter functions (I copy pasta this from a 6502 reference page lel);
 var operations = [
-/*          00,     01,     02,     03,     04,     05,     06,     07,     08,     09,     0A,     0B,     0C,     0D,     0E,     0F,    LSB*/
-/* 0 */    BRK,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    PHP,    ORA,   ASLA,    NOP,    NOP,    ORA,   ASLM,    NOP,   
-/* 1 */    BPL,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,    CLC,    ORA,    NOP,    NOP,    NOP,    ORA,   ASLM,    NOP,   
-/* 2 */    JSR,    AND,    NOP,    NOP,    BIT,    AND,   ROLM,    NOP,    PLP,    AND,   ROLA,    NOP,    BIT,    AND,   ROLM,    NOP,   
-/* 3 */    BMI,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,    SEC,    AND,    NOP,    NOP,    NOP,    AND,   ROLM,    NOP,   
-/* 4 */    RTI,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,    PHA,    EOR,   LSRA,    NOP,    JMP,    EOR,   LSRM,    NOP,   
-/* 5 */    BVC,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,    CLI,    EOR,    NOP,    NOP,    NOP,    EOR,   LSRM,    NOP,   
-/* 6 */    RTS,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,    PLA,    ADC,   RORA,    NOP,    JMP,    ADC,   RORM,    NOP,   
-/* 7 */    BVS,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,    SEI,    ADC,    NOP,    NOP,    NOP,    ADC,   RORM,    NOP,   
-/* 8 */    NOP,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    DEY,    NOP,    TXA,    NOP,    STY,    STA,    STX,    NOP,   
-/* 9 */    BCC,    STA,    NOP,    NOP,    STY,    STA,    STX,    NOP,    TYA,    STA,    TXS,    NOP,    NOP,    STA,    NOP,    NOP,   
-/* A */    LDY,    LDA,    LDX,    NOP,    LDY,    LDA,    LDX,    NOP,    TAY,    LDA,    TAX,    NOP,    LDY,    LDA,    LDX,    NOP,   
-/* B */    BCS,    LDA,    NOP,    NOP,    LDY,    LDA,    LDX,    NOP,    CLV,    LDA,    TSX,    NOP,    LDY,    LDA,    LDX,    NOP,   
-/* C */    CPY,    CMP,    NOP,    NOP,    CPY,    CMP,    DEC,    NOP,    INY,    CMP,    DEX,    NOP,    CPY,    CMP,    DEC,    NOP,   
-/* D */    BNE,    CMP,    NOP,    NOP,    NOP,    CMP,    DEC,    NOP,    CLD,    CMP,    NOP,    NOP,    NOP,    CMP,    DEC,    NOP,   
-/* E */    CPX,    SBC,    NOP,    NOP,    CPX,    SBC,    INC,    NOP,    INX,    SBC,    NOP,    NOP,    CPX,    SBC,    INC,    NOP,   
-/* F */    BEQ,    SBC,    NOP,    NOP,    NOP,    SBC,    INC,    NOP,    SED,    SBC,    NOP,    NOP,    NOP,    SBC,    INC,    NOP];
+/*                      00,                 01,                 02,                 03,                 04,                 05,                 06,                 07,                 08,                 09,                 0A,                 0B,                 0C,                 0D,                 0E,                 0F,                LSB*/
+/* 00*/                BRK,                ORA,                NOP,                NOP,                NOP,                ORA,               ASLM,                NOP,                PHP,                ORA,               ASLA,                NOP,                NOP,                ORA,               ASLM,                NOP,               
+/* 01*/                BPL,                ORA,                NOP,                NOP,                NOP,                ORA,               ASLM,                NOP,                CLC,                ORA,                NOP,                NOP,                NOP,                ORA,               ASLM,                NOP,               
+/* 02*/                JSR,                AND,                NOP,                NOP,                BIT,                AND,               ROLM,                NOP,                PLP,                AND,               ROLA,                NOP,                BIT,                AND,               ROLM,                NOP,               
+/* 03*/                BMI,                AND,                NOP,                NOP,                NOP,                AND,               ROLM,                NOP,                SEC,                AND,                NOP,                NOP,                NOP,                AND,               ROLM,                NOP,               
+/* 04*/                RTI,                EOR,                NOP,                NOP,                NOP,                EOR,               LSRM,                NOP,                PHA,                EOR,               LSRA,                NOP,                JMP,                EOR,               LSRM,                NOP,               
+/* 05*/                BVC,                EOR,                NOP,                NOP,                NOP,                EOR,               LSRM,                NOP,                CLI,                EOR,                NOP,                NOP,                NOP,                EOR,               LSRM,                NOP,               
+/* 06*/                RTS,                ADC,                NOP,                NOP,                NOP,                ADC,               RORM,                NOP,                PLA,                ADC,               RORA,                NOP,                JMP,                ADC,               RORM,                NOP,               
+/* 07*/                BVS,                ADC,                NOP,                NOP,                NOP,                ADC,               RORM,                NOP,                SEI,                ADC,                NOP,                NOP,                NOP,                ADC,               RORM,                NOP,               
+/* 08*/                NOP,                STA,                NOP,                NOP,                STY,                STA,                STX,                NOP,                DEY,                NOP,                TXA,                NOP,                STY,                STA,                STX,                NOP,               
+/* 09*/                BCC,                STA,                NOP,                NOP,                STY,                STA,                STX,                NOP,                TYA,                STA,                TXS,                NOP,                NOP,                STA,                NOP,                NOP,               
+/* 0A*/                LDY,                LDA,                LDX,                NOP,                LDY,                LDA,                LDX,                NOP,                TAY,                LDA,                TAX,                NOP,                LDY,                LDA,                LDX,                NOP,               
+/* 0B*/                BCS,                LDA,                NOP,                NOP,                LDY,                LDA,                LDX,                NOP,                CLV,                LDA,                TSX,                NOP,                LDY,                LDA,                LDX,                NOP,               
+/* 0C*/                CPY,                CMP,                NOP,                NOP,                CPY,                CMP,                DEC,                NOP,                INY,                CMP,                DEX,                NOP,                CPY,                CMP,                DEC,                NOP,               
+/* 0D*/                BNE,                CMP,                NOP,                NOP,                NOP,                CMP,                DEC,                NOP,                CLD,                CMP,                NOP,                NOP,                NOP,                CMP,                DEC,                NOP,               
+/* 0E*/                CPX,                SBC,                NOP,                NOP,                CPX,                SBC,                INC,                NOP,                INX,                SBC,                NOP,                NOP,                CPX,                SBC,                INC,                NOP,               
+/* 0F*/                BEQ,                SBC,                NOP,                NOP,                NOP,                SBC,                INC,                NOP,                SED,                SBC,                NOP,                NOP,                NOP,                SBC,                INC,                NOP];
 /*MSB*/
 
 
@@ -50,23 +49,23 @@ var operations = [
 // TODO map these to actual functions (also a copy pasta from internet lolz);
 // TODO should I make em all functions?
 var addressing = [
-/*                    00,              01,              02,              03,              04,              05,              06,              07,              08,              09,             0A,               0B,              0C,              0D,              0E,              0F,             LSB*/
-/* 00*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",              "",        absolute,        absolute,              "",          
-/* 10*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
-/* 20*/         absolute, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        absolute,        absolute,        absolute,              "",          
-/* 30*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
-/* 40*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        absolute,        absolute,        absolute,              "",          
-/* 50*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
-/* 60*/           "impl", indexedIndirect,              "",              "",              "",        zeroPage,        zeroPage,              "",          "impl",       immediate,             "A",              "",        indirect,        absolute,        absolute,              "",          
-/* 70*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
-/* 80*/               "", indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",              "",          "impl",              "",        absolute,        absolute,        absolute,              "",          
-/* 90*/         relative, indirectIndexed,              "",              "",       zeroPageX,       zeroPageX,       zeroPageY,              "",          "impl",       absoluteY,          "impl",              "",              "",       absoluteX,              "",              "",          
-/* A0*/        immediate, indexedIndirect,       immediate,              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
-/* B0*/         relative, indirectIndexed,              "",              "",       zeroPageX,       zeroPageX,       zeroPageY,              "",          "impl",       absoluteY,          "impl",              "",       absoluteX,       absoluteX,       absoluteY,              "",          
-/* C0*/        immediate, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
-/* D0*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,              "",          
-/* E0*/        immediate, indexedIndirect,              "",              "",        zeroPage,        zeroPage,        zeroPage,              "",          "impl",       immediate,          "impl",              "",        absolute,        absolute,        absolute,              "",          
-/* F0*/         relative, indirectIndexed,              "",              "",              "",       zeroPageX,       zeroPageX,              "",          "impl",       absoluteY,              "",              "",              "",       absoluteX,       absoluteX,                ];
+/*                       00,                 01,                 02,                 03,                 04,                 05,                 06,                 07,                 08,                 09,                0A,                  0B,                 0C,                 0D,                 0E,                 0F,                LSB*/
+/* 00*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",                 "",           absolute,        absoluteRef,                 "",             
+/* 10*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
+/* 20*/            absolute,    indexedIndirect,                 "",                 "",           zeroPage,           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           absolute,           absolute,        absoluteRef,                 "",             
+/* 30*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
+/* 40*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           absolute,           absolute,        absoluteRef,                 "",             
+/* 50*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
+/* 60*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           indirect,           absolute,        absoluteRef,                 "",             
+/* 70*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
+/* 80*/                  "", indexedIndirectRef,                 "",                 "",        zeroPageRef,        zeroPageRef,        zeroPageRef,                 "",             "impl",                 "",             "impl",                 "",        absoluteRef,        absoluteRef,        absoluteRef,                 "",             
+/* 90*/            relative, indirectIndexedRef,                 "",                 "",       zeroPageXRef,       zeroPageXRef,       zeroPageYRef,                 "",             "impl",       absoluteYRef,             "impl",                 "",                 "",       absoluteXRef,                 "",                 "",             
+/* A0*/           immediate,    indexedIndirect,          immediate,                 "",           zeroPage,           zeroPage,           zeroPage,                 "",             "impl",          immediate,             "impl",                 "",           absolute,           absolute,           absolute,                 "",             
+/* B0*/            relative,    indirectIndexed,                 "",                 "",          zeroPageX,          zeroPageX,          zeroPageY,                 "",             "impl",          absoluteY,             "impl",                 "",          absoluteX,          absoluteX,          absoluteY,                 "",             
+/* C0*/           immediate,    indexedIndirect,                 "",                 "",           zeroPage,           zeroPage,        zeroPageRef,                 "",             "impl",          immediate,             "impl",                 "",           absolute,           absolute,        absoluteRef,                 "",             
+/* D0*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,       zeroPageXRef,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
+/* E0*/           immediate,    indexedIndirect,                 "",                 "",           zeroPage,           zeroPage,        zeroPageRef,                 "",             "impl",          immediate,             "impl",                 "",           absolute,           absolute,        absoluteRef,                 "",             
+/* F0*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,       zeroPageXRef,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                   ];
 /*MSB*/
 
 
@@ -96,11 +95,11 @@ function dumpPage(pageNum) {
     }
     document.write(str);
 }
-loadProgram("a9 01 8d 00 02 a9 05 8d 01 02 a9 09 8d 02 02");
-for (var i = 0; i < 10; i++) {
+loadProgram("a9 01 85 f0 a9 cc 85 f1 6c f0 00");
+for (var i = 0; i < 5; i++) {
     executeCycle();
 }
-dumpPage(2);
+dumpPage(0);
 console.log(readMemory(0x202));
 
 
@@ -208,14 +207,52 @@ function indirect() {
 function indexedIndirect() {
     var LSB = (readPC() + X) & 0xFF;
     var MSB = (LSB + 1) & 0xFF;
-    return readMemory(MSB) << 8 | readMemory(LSB);
+    return readMemory(readMemory(MSB) << 8 | readMemory(LSB));
 }
 function indirectIndexed() {
     var LSB = readPC() & 0xFF;
     var MSB = (LSB + 1) & 0xFF;
-    return ((readMemory(MSB) << 8 | readMemory(LSB)) + Y) & 0xFFFF;
+    return readMemory(((readMemory(MSB) << 8 | readMemory(LSB)) + Y) & 0xFFFF);
 }
 
+
+
+
+
+
+// addressing that returns ADDRESS not VALUE
+function zeroPageRef() {
+    return readPC();
+}
+function zeroPageXRef() {
+    return (readPC() + X) & 0xFF;
+}
+function zeroPageYRef() {
+    return (readPC() + Y) & 0xFF;
+}
+
+
+// TODO: CHECK ENDIANNESS
+function absoluteRef() {
+    var temp = readPC() | readPC() << 8;
+    return temp;
+}
+function absoluteXRef() {
+    return ((readPC() | readPC() << 8) + X) & 0xFFFF;
+}
+function absoluteYRef() {
+    return ((readPC() | readPC() << 8) + Y) & 0xFFFF;
+}
+function indexedIndirectRef() {
+    var LSB = (readPC() + X) & 0xFF;
+    var MSB = (LSB + 1) & 0xFF;
+    return readMemory(MSB) << 8 | readMemory(LSB);
+}
+function indirectIndexedRef() {
+    var LSB = readPC() & 0xFF;
+    var MSB = (LSB + 1) & 0xFF;
+    return ((readMemory(MSB) << 8 | readMemory(LSB)) + Y) & 0xFFFF;
+}
 
 
 
@@ -257,7 +294,7 @@ function getCarryFlag() {
 }
 
 function getZeroFlag() {
-    return (p >> 1) & 1;
+    return (P >> 1) & 1;
 }
 
 function getInterruptFlag() {
@@ -305,7 +342,7 @@ function setZeroFlag(bit) {
     if (bit) {
         P |= 1 << 1;
     } else {
-        P |= 0 << 1;
+        P &= ~(1 << 1);
     }
 }
 
@@ -408,11 +445,17 @@ function SBC(val) {
 // branching operations
 // TODO timing when crossing page?
 function branch(val) {
-    if (val >> 7) {
-        PC -= (~val + 1) & 0xFF;
+    if (val >>> 7) {
+        PC -= (0xFF - val);
     } else {
         PC += val;
     }
+    PC--;
+    //     PC -= (~val + 1) & 0xFF;
+    // } else {
+    //     PC += val;
+    // }
+    //PC = (PC + val) & 0xFFFF
 }
 function BCS(val) {
     if (getCarryFlag()) {
@@ -859,4 +902,5 @@ function TYA() {
 // self explanatory
 function NOP() {
     // lol
+    // 
 }
