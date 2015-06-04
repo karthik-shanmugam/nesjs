@@ -1,3 +1,4 @@
+// TODO FAILING EASY 6502 JSR/RTS EXAMPLE, OUR STACK NOT MATCHING HIS
 console.log("hello world");
 
 // The 6502's registers
@@ -54,9 +55,9 @@ var addressing = [
 /* 10*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
 /* 20*/            absolute,    indexedIndirect,                 "",                 "",           zeroPage,           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           absolute,           absolute,        absoluteRef,                 "",             
 /* 30*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
-/* 40*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           absolute,           absolute,        absoluteRef,                 "",             
+/* 40*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",        absoluteRef,           absolute,        absoluteRef,                 "",             
 /* 50*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
-/* 60*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",           indirect,           absolute,        absoluteRef,                 "",             
+/* 60*/              "impl",    indexedIndirect,                 "",                 "",                 "",           zeroPage,           zeroPage,                 "",             "impl",          immediate,                "A",                 "",        indirectRef,           absolute,        absoluteRef,                 "",             
 /* 70*/            relative,    indirectIndexed,                 "",                 "",                 "",          zeroPageX,          zeroPageX,                 "",             "impl",          absoluteY,                 "",                 "",                 "",          absoluteX,       absoluteXRef,                 "",             
 /* 80*/                  "", indexedIndirectRef,                 "",                 "",        zeroPageRef,        zeroPageRef,        zeroPageRef,                 "",             "impl",                 "",             "impl",                 "",        absoluteRef,        absoluteRef,        absoluteRef,                 "",             
 /* 90*/            relative, indirectIndexedRef,                 "",                 "",       zeroPageXRef,       zeroPageXRef,       zeroPageYRef,                 "",             "impl",       absoluteYRef,             "impl",                 "",                 "",       absoluteXRef,                 "",                 "",             
@@ -78,7 +79,7 @@ var addressing = [
 // 
 function loadProgram(prgm) {
     var prgmArr = prgm.split(" ");
-    var prgmLoc = 0x8000;
+    var prgmLoc = 0x600;
     for (var i = 0; i < prgmArr.length; i++) {
         writeMemory(prgmLoc + i, parseInt("0x".concat(prgmArr[i])))
     }
@@ -95,11 +96,12 @@ function dumpPage(pageNum) {
     }
     document.write(str);
 }
-loadProgram("a9 01 85 f0 a9 cc 85 f1 6c f0 00");
-for (var i = 0; i < 5; i++) {
+loadProgram("20 09 06 20 0c 06 20 12 06 a2 00 60 e8 e0 05 d0 fb 60 00");
+PC = 0x600 - 1;
+for (var i = 0; i < 30; i++) {
     executeCycle();
 }
-dumpPage(0);
+dumpPage(1);
 console.log(readMemory(0x202));
 
 
@@ -198,7 +200,7 @@ function absoluteX() {
 function absoluteY() {
     return readMemory(((readPC() | readPC() << 8) + Y) & 0xFFFF);
 }
-function indirect() {
+function indirectRef() {
     var addr = readPC() << 8 | readPC();
     return readMemory(addr) | readMemory((addr + 1) & 0xFFFF) << 8;
 }
@@ -601,8 +603,9 @@ function INY() {
 
 
 // JUMPING AROUND AND STUFF
-// TODO
+// TODO REPLACE THIS WITH REAL BRK
 function BRK() {
+    return;
     push((PC >>> 8) & 0xFF);
     push(PC & 0xFF);
     push(P);
@@ -610,8 +613,9 @@ function BRK() {
     PC = readMemory(0xFFFE) << 8 | readMemory(0xFFFF);
     setBRKFlag(1);
 }
+// 6/3/15 added - 1. also made JMP addressing as refs
 function JMP(val) {
-    PC = val;
+    PC = val - 1;
 }
 // TODO
 function JSR(val) {
